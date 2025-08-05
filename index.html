@@ -3,371 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect - Private Chat Rooms</title>
+    <title>Connect - Chat like WhatsApp</title>
     <style>
-        * {
-            box-sizing: border-box;
+        :root {
+            --primary: #25d366;
+            --primary-dark: #075e54;
+            --secondary: #ece5dd;
+            --chat-bg: url('https://i.ibb.co/c8LxLyB/wa-bg.png');
         }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--secondary);
+            margin: 0;
             min-height: 100vh;
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        
         .container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow: hidden;
+            max-width: 480px;
+            margin: auto;
+            background: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            border-radius: 0 0 12px 12px;
             position: relative;
         }
-        
-        .brand {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        
-        #setup {
-            padding: 30px 20px;
-            text-align: center;
-        }
-        
-        #setup h2 {
-            color: #333;
-            margin: 20px 0 10px 0;
-            font-size: 24px;
-        }
-        
-        #setup p {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
-        
-        .input-group {
-            margin: 20px 0;
-        }
-        
-        input {
-            padding: 15px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 16px;
-            width: 100%;
-            max-width: 300px;
-            outline: none;
-            transition: border-color 0.2s ease;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-        }
-        
-        input:focus {
-            border-color: #667eea;
-        }
-        
-        button {
-            padding: 15px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 8px;
-            transition: transform 0.1s ease, opacity 0.1s ease;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        @media (hover: hover) {
-            button:hover {
-                transform: translateY(-1px);
-                opacity: 0.9;
-            }
-        }
-        
-        button:active {
-            transform: translateY(0);
-            opacity: 0.8;
-        }
-        
-        #roomError {
-            color: #e74c3c;
-            margin: 15px 0;
-            font-weight: bold;
-            padding: 12px;
-            background: #ffeaea;
-            border-radius: 10px;
-            display: none;
-            font-size: 14px;
-        }
-        
-        #roomSuccess {
-            color: #27ae60;
-            margin: 15px 0;
-            font-weight: bold;
-            padding: 12px;
-            background: #eafaf1;
-            border-radius: 10px;
-            display: none;
-            font-size: 14px;
-        }
-        
-        #chat {
-            display: none;
-        }
-        
-        #roomInfo {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            font-weight: bold;
+        .header {
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            color: #fff;
+            padding: 20px 20px 12px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            border-radius: 0 0 12px 12px;
+            position: sticky;
+            top: 0;
+            z-index: 3;
         }
-        
-        #messages {
-            height: 350px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #f8f9fa;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .message {
-            margin: 12px 0;
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 85%;
-            word-wrap: break-word;
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .message.other {
-            background: #e3f2fd;
-            color: #1976d2;
-            margin-right: auto;
-        }
-        
-        .message.own {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            margin-left: auto;
-        }
-        
-        .message-sender {
-            font-weight: bold;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-        
-        .message-text {
-            font-size: 15px;
-            line-height: 1.4;
-        }
-        
-        .message-time {
-            font-size: 11px;
-            opacity: 0.7;
-            margin-top: 4px;
-        }
-        
-        .message-input {
+        .header .brand {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
             display: flex;
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-            gap: 10px;
+            align-items: center;
         }
-        
-        #messageInput {
-            flex: 1;
-            margin: 0;
-            max-width: none;
+        .header .brand::before {
+            content: '';
+            display: inline-block;
+            background: url('https://i.ibb.co/JjV6kV9/whatsapp.png') no-repeat center center/cover;
+            width: 28px; height: 28px;
+            margin-right: 10px;
+            opacity: 0.85;
         }
-        
-        .online-users {
-            font-size: 13px;
-            opacity: 0.9;
-            margin-top: 3px;
+        .header .room-details {
+            font-size: 1rem;
+            letter-spacing: 1px;
+            text-align: right;
         }
-        
-        .footer {
-            background: #f8f9fa;
-            padding: 15px;
+        .action-area {
+            padding: 28px 20px 12px 20px;
+        }
+        .welcome {
             text-align: center;
-            font-size: 14px;
-            color: #666;
-            border-top: 1px solid #e0e0e0;
         }
-        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin: 18px 0 10px 0;
+            gap: 12px;
+        }
+        .input-group label {
+            text-align: left;
+            color: #555;
+            font-size: 1.04em;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        input[type='text'] {
+            border: 1.4px solid #dadada;
+            outline: none;
+            border-radius: 6px;
+            padding: 12px 13px;
+            font-size: 1.12em;
+            background: #fafafa;
+            transition: border .2s;
+        }
+        input[type='text']:focus {
+            border: 1.4px solid var(--primary-dark);
+        }
+        button {
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            color: #fff;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            box-shadow: 0 2px 8px #25d36632;
+            transition: box-shadow .18s, background .18s;
+        }
+        button:active {
+            background: linear-gradient(90deg, #43b981 60%, var(--primary-dark));
+        }
+        .alert {
+            color: #f44336;
+            font-size: 1em;
+            margin: 6px 0 0 0;
+        }
+        /* Chat BG & Structure */
+        #chat {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        #chatArea {
+            flex: 1; 
+            background: var(--chat-bg), var(--secondary);
+            background-size: contain;
+            padding: 12px;
+            overflow-y: auto;
+            transition: background 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            animation: fadeIn .4s;
+        }
+        @keyframes fadeIn {
+            from { opacity:0; }
+            to { opacity:1; }
+        }
+
+        .msg-bubble {
+            max-width: 74%;
+            margin: 5px 0;
+            padding: 10px 14px 8px 14px;
+            background: #fff;
+            border-radius: 14px 14px 14px 4px;
+            position: relative;
+            font-size: 1.01em;
+            box-shadow: 0 1px 3px #5551;
+            word-wrap: break-word;
+            opacity: 0;
+            animation: popin 0.26s cubic-bezier(.26,.9,.65,1.45) forwards;
+        }
+        .msg-bubble.own {
+            background: linear-gradient(90deg, #dcf8c6, #7de290 55%);
+            color: #222;
+            border-radius: 14px 4px 16px 14px;
+            margin-left: auto;
+            margin-right: 2px;
+        }
+        .msg-meta {
+            color: #95a5a6;
+            font-size: 0.77em;
+            margin-top: 4px;
+            text-align: right;
+        }
+        @keyframes popin {
+            0% {transform: scale(0.96) translateY(10px); opacity:0}
+            65%{transform: scale(1.05) translateY(-3px);}
+            100%{transform: scale(1) translateY(0); opacity:1;}
+        }
+        /* Input & Footer */
+        .bottom-bar {
+            background: #fafafa;
+            padding: 10px;
+            border-top: 1.5px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+        .bottom-bar input[type='text'] {
+            flex: 1;
+            outline: none;
+            border: 1.5px solid #c7ebda;
+            border-radius: 20px;
+            font-size: 1.04em;
+            background: #fff;
+            padding: 11px 14px;
+            margin: 0;
+        }
+        .bottom-bar button {
+            padding: 0 20px;
+            font-size: 1.32em;
+            border-radius: 100px;
+            background: var(--primary);
+            background: linear-gradient(90deg, #25d366, #2ec372 50%);
+            box-shadow: none;
+            height: 44px;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px 10px 15px 10px;
+            color: #444;
+            font-size: 1em;
+            background: none;
+        }
         .footer a {
-            color: #667eea;
+            color: #25d366;
             text-decoration: none;
-            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 700;
         }
-        
-        .footer a:hover {
-            text-decoration: underline;
+        .footer img {
+            width: 21px; height: 21px; vertical-align: middle; margin-right: 3px; filter: drop-shadow(0 0 1px #19ea95c0);
         }
-        
-        /* Mobile Optimizations */
-        @media (max-width: 768px) {
-            body {
-                padding: 5px;
-            }
-            
-            .brand {
-                font-size: 24px;
-                padding: 15px;
-            }
-            
-            #setup {
-                padding: 20px 15px;
-            }
-            
-            #setup h2 {
-                font-size: 20px;
-            }
-            
-            input {
-                width: 100%;
-                max-width: 280px;
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-            
-            button {
-                padding: 12px 20px;
-                font-size: 15px;
-                margin: 5px;
-            }
-            
-            #messages {
-                height: 300px;
-                padding: 10px;
-            }
-            
-            .message {
-                max-width: 90%;
-                padding: 8px 12px;
-                font-size: 14px;
-            }
-            
-            #roomInfo {
-                padding: 12px 15px;
-                font-size: 14px;
-            }
-            
-            .message-input {
-                padding: 10px;
-            }
-            
-            .footer {
-                padding: 12px;
-                font-size: 13px;
-            }
+        .fade {
+            animation: fadeIn .5s;
         }
-        
-        @media (max-width: 480px) {
-            .brand {
-                font-size: 20px;
-                letter-spacing: 1px;
+        /* Mobile */
+        @media (max-width: 540px) {
+            .container,
+            #chatArea {
+                max-width: 100vw;
+                border-radius: 0;
             }
-            
-            #roomInfo {
-                flex-direction: column;
-                gap: 8px;
-                text-align: center;
-            }
-            
-            #messages {
-                height: 280px;
-            }
-            
-            .message {
-                max-width: 95%;
-            }
+            .header {padding: 15px 13px 8px 14px;}
+            .footer {font-size: 0.96em;}
         }
-        
-        /* Smooth scrolling without heavy animations */
-        .smooth-scroll {
-            scroll-behavior: smooth;
+        @media (max-width: 370px) {
+            .header .brand {font-size: 1.1rem;}
         }
-        
-        /* Loading state */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
+        /* Hide scrollbars on mobile */
+        #chatArea::-webkit-scrollbar {width:0 !important;}
+        #chatArea {scrollbar-width:none;}
     </style>
-    
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="brand">CONNECT</div>
-        
-        <div id="setup">
-            <h2>🔐 Private Chat Rooms</h2>
-            <p>Create a secure private room or join with an invite code</p>
-            
-            <div class="input-group">
-                <button id="createRoom">🏠 Create New Room</button>
-            </div>
-            
-            <div class="input-group">
-                <input type="text" id="roomCodeInput" placeholder="Enter room code (e.g., ABC123)" maxlength="6">
-                <br>
-                <button id="joinRoom">🚪 Join Room</button>
-            </div>
-            
-            <div id="roomError"></div>
-            <div id="roomSuccess"></div>
+        <div class="header">
+            <span class="brand">CONNECT</span>
+            <span class="room-details" id="roomDetails"></span>
         </div>
-        
-        <div id="chat">
-            <div id="roomInfo">
-                <div>
-                    <div id="roomCode"></div>
-                    <div class="online-users" id="onlineUsers"></div>
+        <div class="action-area" id="actionArea">
+            <form id="userForm" autocomplete="off">
+                <div class="welcome fade">
+                    <h2 style="margin-bottom:0.4em;">👋 Welcome to <span style="color:#25d366;">Connect</span></h2>
+                    <p>Enter your name to chat securely like WhatsApp.<br>Create a new room or join using a code.</p>
                 </div>
-                <div>
-                    <button id="leaveRoom" style="background: rgba(255,255,255,0.2); padding: 8px 15px; font-size: 13px;">🚪 Leave</button>
+                <div class="input-group">
+                    <label for="username">Your Name</label>
+                    <input type="text" id="username" required maxlength="20" placeholder="Eg: Kowsik" autocomplete="nickname" style="text-transform:capitalize">
                 </div>
-            </div>
-            
-            <div id="messages" class="smooth-scroll"></div>
-            
-            <div class="message-input">
-                <input type="text" id="messageInput" placeholder="Type your message..." maxlength="500">
-                <button id="sendMessage">📤</button>
-            </div>
+                <div class="input-group" style="margin-top:14px;">
+                    <button type="button" id="createRoom" style="background:var(--primary);">👉 Create New Room</button>
+                </div>
+                <div class="input-group" style="margin-top:8px;">
+                    <label for="roomCodeInput">Room Code</label>
+                    <input type="text" id="roomCodeInput" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="Eg: XZ302A">
+                    <button type="button" id="joinRoom" style="margin-top:6px;width:100%;">🔑 Join Room</button>
+                </div>
+                <div class="alert" id="formError"></div>
+            </form>
         </div>
-        
+
+        <div id="chat" style="display:none;">
+            <div id="chatArea"></div>
+            <form class="bottom-bar" id="chatForm" autocomplete="off" spellcheck="true">
+                <input type="text" id="messageInput" maxlength="500" placeholder="Type a message..." autocomplete="off" required>
+                <button type="submit" tabindex="2" title="Send">▶</button>
+            </form>
+        </div>
         <div class="footer">
-            Created by <strong>Kowsik</strong> | 
-            <a href="https://instagram.com/iam_kowsik_" target="_blank" rel="noopener">@iam_kowsik_</a>
+            Created by Kowsik &nbsp;|&nbsp;
+            <a href="https://instagram.com/iam_kowsik_" target="_blank" rel="noopener">
+                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram logo">
+                @iam_kowsik_
+            </a>
         </div>
     </div>
-
     <script>
-        // Firebase Configuration
+        // --- Firebase config ---
         const firebaseConfig = {
             apiKey: "AIzaSyBVYirdGN7Vp858jQNkYdE8UdkQ1ZbCH6k",
             authDomain: "connect-e450b.firebaseapp.com",
@@ -377,267 +288,244 @@
             messagingSenderId: "674438876738",
             appId: "1:674438876738:web:ab26bbbedf99c9b64767db"
         };
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        
-        // App Variables
+
+        // --- App state ---
+        let myName = "";
         let currentRoom = null;
-        let currentUser = 'User_' + Math.random().toString(36).substr(2,6);
         let messageListener = null;
         let usersListener = null;
+        let renderedMsgs = 0;
+        let myUID = "User_" + Math.random().toString(36).substr(2,6);
 
-        // DOM Elements
-        const setupDiv = document.getElementById('setup');
-        const chatDiv = document.getElementById('chat');
+        // DOM
+        const actionArea = document.getElementById('actionArea');
+        const userForm = document.getElementById('userForm');
+        const formError = document.getElementById('formError');
         const createRoomBtn = document.getElementById('createRoom');
-        const joinRoomBtn = document.getElementById('joinRoom');
+        const joinRoomBtn   = document.getElementById('joinRoom');
+        const usernameInput = document.getElementById('username');
         const roomCodeInput = document.getElementById('roomCodeInput');
-        const messagesDiv = document.getElementById('messages');
+        const chatDiv = document.getElementById('chat');
+        const chatArea = document.getElementById('chatArea');
         const messageInput = document.getElementById('messageInput');
-        const sendMessageBtn = document.getElementById('sendMessage');
-        const leaveRoomBtn = document.getElementById('leaveRoom');
-        const roomError = document.getElementById('roomError');
-        const roomSuccess = document.getElementById('roomSuccess');
+        const chatForm     = document.getElementById('chatForm');
+        const roomDetails  = document.getElementById('roomDetails');
 
-        // Utility Functions
-        function showError(message) {
-            roomError.textContent = message;
-            roomError.style.display = 'block';
-            roomSuccess.style.display = 'none';
-        }
-
-        function showSuccess(message) {
-            roomSuccess.textContent = message;
-            roomSuccess.style.display = 'block';
-            roomError.style.display = 'none';
-        }
-
-        function hideMessages() {
-            roomError.style.display = 'none';
-            roomSuccess.style.display = 'none';
-        }
-
-        // Generate Random Room Code
-        function generateRoomCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let code = '';
-            for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+        // Helper
+        function genRoomCode() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let code = "";
+            for(let i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
             return code;
         }
 
-        // Create Room Function with Loading State
-        createRoomBtn.onclick = function() {
-            createRoomBtn.classList.add('loading');
-            createRoomBtn.textContent = 'Creating...';
-            
-            const code = generateRoomCode();
-            
-            db.ref('chatRooms/' + code).set({
-                createdAt: Date.now(),
-                createdBy: currentUser
-            }).then(() => {
-                showSuccess(`Room created! Code: ${code}`);
-                setTimeout(() => joinRoom(code), 1000);
-            }).catch((error) => {
-                showError('Error creating room: ' + error.message);
-            }).finally(() => {
-                createRoomBtn.classList.remove('loading');
-                createRoomBtn.textContent = '🏠 Create New Room';
+        // Validate name: Not blank, no only numbers/spaces, not too long
+        function validName(name) {
+            if(!name || name.trim().length < 2) return false;
+            if(/^\d+$/.test(name.trim())) return false;
+            return true;
+        }
+
+        // Entry: Set name then show actions
+        usernameInput.addEventListener('input', ()=>{
+            formError.textContent="";
+        });
+
+        createRoomBtn.onclick = ()=>{
+            myName = usernameInput.value.trim();
+            if(!validName(myName)) { formError.textContent = "Please enter a proper name (min 2 letters, not just numbers)"; return; }
+            formError.textContent = "";
+            let code = genRoomCode();
+            // Make sure it's unique (very rare collision)
+            db.ref('chatRooms/'+code).once('value').then((snap)=>{
+                if(snap.exists()) { createRoomBtn.onclick(); return; }
+                // create room
+                db.ref('chatRooms/'+code).set({
+                    createdAt: Date.now(),
+                    createdBy: myName
+                });
+                joinRoomByCode(code);
             });
         };
 
-        // Join Room Function
-        joinRoomBtn.onclick = function() {
-            const code = roomCodeInput.value.trim().toUpperCase();
-            if (!code) {
-                showError('Please enter a room code');
+        joinRoomBtn.onclick = ()=>{
+            myName = usernameInput.value.trim();
+            if(!validName(myName)) { formError.textContent = "Please enter your name to join."; return; }
+            let code = roomCodeInput.value.trim().toUpperCase();
+            if(!/^[A-Z0-9]{6}$/.test(code)) {
+                formError.textContent = "Enter a valid 6 character room code.";
                 return;
             }
-
-            joinRoomBtn.classList.add('loading');
-            joinRoomBtn.textContent = 'Joining...';
-
-            db.ref('chatRooms/' + code).once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    joinRoom(code);
-                } else {
-                    showError('Room not found. Please check the code.');
-                }
-            }).catch((error) => {
-                showError('Error joining room: ' + error.message);
-            }).finally(() => {
-                joinRoomBtn.classList.remove('loading');
-                joinRoomBtn.textContent = '🚪 Join Room';
+            formError.textContent = "";
+            db.ref('chatRooms/'+code).once('value').then((snap)=>{
+                if(!snap.exists()) {formError.textContent="No such room found."; return;}
+                joinRoomByCode(code);
             });
         };
 
-        // Join Room and Show Chat Interface
-        function joinRoom(code) {
+        // Allow enter to submit name/join room in UX
+        userForm.addEventListener("keydown", e => {
+            if(e.key==="Enter" && document.activeElement!==usernameInput) {
+                e.preventDefault();
+            }
+        });
+
+        // Main join logic
+        function joinRoomByCode(code) {
             currentRoom = code;
-            hideMessages();
-            
-            setupDiv.style.display = 'none';
-            chatDiv.style.display = 'block';
-            
-            document.getElementById('roomCode').textContent = `Room: ${code}`;
-            
-            // Add user to room
-            db.ref(`chatRooms/${code}/users/${currentUser}`).set({
+            // Add user to /users
+            db.ref(`chatRooms/${code}/users/${myUID}`).set({
+                name: myName,
                 joinedAt: Date.now(),
                 lastSeen: Date.now()
             });
-
+            switchToChatUI();
             listenForMessages();
             listenForUsers();
-            
-            // Focus on message input with delay for mobile
-            setTimeout(() => {
-                messageInput.focus();
-            }, 300);
+            updateRoomDetails(code);
         }
 
-        // Listen for Messages - Optimized for mobile
-        function listenForMessages() {
-            messagesDiv.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Loading messages...</div>';
-            
-            if (messageListener) messageListener.off();
-
-            messageListener = db.ref(`chatRooms/${currentRoom}/messages`).orderByChild('timestamp').limitToLast(50);
-            
-            let isFirstLoad = true;
-            messageListener.on('child_added', (snapshot) => {
-                if (isFirstLoad) {
-                    messagesDiv.innerHTML = '';
-                    isFirstLoad = false;
+        function updateRoomDetails(code) {
+            db.ref('chatRooms/' + code).once('value').then(snap => {
+                if(snap.exists()) {
+                    roomDetails.textContent = "Room: " + code;
+                } else {
+                    roomDetails.textContent = "";
                 }
-                const msg = snapshot.val();
-                displayMessage(msg);
             });
         }
 
-        // Listen for Users
+        function switchToChatUI() {
+            actionArea.style.display = "none";
+            chatDiv.style.display = "flex";
+            chatArea.innerHTML = '<div class="welcome" style="font-size:1.13em;text-align:center;color:#669C7B;padding:55px 10px 24px 10px;"><b>Room Joined!</b><br>Welcome, ' + escapeHtml(myName) + '.<br><span style="font-size:0.9em;color:#888;">Say hello! 👋</span></div>';
+            renderedMsgs = 0;
+            messageInput.value = "";
+            setTimeout(()=> messageInput.focus(), 250);
+        }
+
+        function listenForMessages() {
+            if(messageListener) messageListener.off();
+            chatArea.innerHTML = "";
+            let msgref = db.ref(`chatRooms/${currentRoom}/messages`).orderByChild('timestamp').limitToLast(60);
+            msgref.on('child_added', snap => {
+                let msg = snap.val();
+                if(!msg) return;
+                renderMessage(msg);
+            });
+            messageListener = msgref;
+        }
+
         function listenForUsers() {
-            if (usersListener) usersListener.off();
-
+            if(usersListener) usersListener.off();
             usersListener = db.ref(`chatRooms/${currentRoom}/users`);
-            usersListener.on('value', (snapshot) => {
-                const users = snapshot.val();
-                const userCount = users ? Object.keys(users).length : 0;
-                document.getElementById('onlineUsers').textContent = `${userCount} user(s) online`;
+            usersListener.on('value', snap=>{
+                let val = snap.val();
+                let count = val ? Object.keys(val).length : 0;
+                roomDetails.textContent = "Room: "+currentRoom+(count?" | "+count+" online":"");
             });
         }
 
-        // Display Message - Optimized for performance
-        function displayMessage(msg) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${msg.sender === currentUser ? 'own' : 'other'}`;
-            
-            const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            msgDiv.innerHTML = `
-                <div class="message-sender">${msg.sender === currentUser ? 'You' : msg.sender}</div>
-                <div class="message-text">${escapeHtml(msg.text)}</div>
-                <div class="message-time">${time}</div>
-            `;
-            
-            messagesDiv.appendChild(msgDiv);
-            
-            // Smooth scroll to bottom without heavy animation
-            requestAnimationFrame(() => {
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            });
-        }
-
-        // Escape HTML to prevent XSS
         function escapeHtml(text) {
-            const div = document.createElement('div');
+            let div=document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Send Message - Optimized
-        function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text || !currentRoom) return;
-
-            const message = {
-                text: text,
-                sender: currentUser,
-                timestamp: Date.now()
-            };
-
-            // Disable input temporarily
-            messageInput.disabled = true;
-            sendMessageBtn.disabled = true;
-
-            db.ref(`chatRooms/${currentRoom}/messages`).push(message).then(() => {
-                messageInput.value = '';
-            }).catch((error) => {
-                console.error('Error sending message:', error);
-            }).finally(() => {
-                messageInput.disabled = false;
-                sendMessageBtn.disabled = false;
-                messageInput.focus();
-            });
+        // Render message, WhatsApp-like animation
+        function renderMessage(msg) {
+            let bubble = document.createElement('div');
+            bubble.className = 'msg-bubble'+(msg.sender===myUID?' own':'');
+            bubble.style.animationDelay = (renderedMsgs<2 ? renderedMsgs*0.11 : 0) + "s";
+            bubble.innerHTML = 
+                `<div style="font-weight:500;">${escapeHtml(msg.name || "Unknown")}</div>
+                <div>${escapeHtml(msg.text)}</div>
+                <div class="msg-meta">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
+            chatArea.appendChild(bubble);
+            renderedMsgs++;
+            setTimeout(() => {
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }, 100);
         }
 
-        // Event Listeners
-        sendMessageBtn.onclick = sendMessage;
-
-        messageInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
-        });
-
-        roomCodeInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                joinRoomBtn.onclick();
-            }
-        });
-
-        // Leave Room
-        leaveRoomBtn.onclick = function() {
-            if (currentRoom) {
-                db.ref(`chatRooms/${currentRoom}/users/${currentUser}`).remove();
-                if (messageListener) messageListener.off();
-                if (usersListener) usersListener.off();
-            }
-            
-            setupDiv.style.display = 'block';
-            chatDiv.style.display = 'none';
-            messagesDiv.innerHTML = '';
-            messageInput.value = '';
-            roomCodeInput.value = '';
-            hideMessages();
-            currentRoom = null;
+        // Send message
+        chatForm.onsubmit = function(e){
+            e.preventDefault();
+            let text = messageInput.value.trim();
+            if(!text) return;
+            chatForm.querySelector("button[type=submit]").disabled = true;
+            db.ref(`chatRooms/${currentRoom}/messages`).push({
+                text: text,
+                sender: myUID,
+                name: myName,
+                timestamp: Date.now()
+            }).then(()=>{
+                messageInput.value = "";
+                chatForm.querySelector("button[type=submit]").disabled = false;
+                setTimeout(()=>messageInput.focus(),100);
+            });
         };
 
-        // Auto-format room code input
-        roomCodeInput.addEventListener('input', function() {
-            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        // Leave Room
+        document.getElementById("roomDetails").addEventListener("dblclick",leaveRoom);
+        // Optional: Double-tap to leave
+        window.addEventListener("keydown", function(e){
+            if(e.key=="Escape" && chatDiv.style.display!=="none") leaveRoom();
         });
 
-        // Keep user online - Optimized interval
-        setInterval(() => {
-            if (currentRoom) {
-                db.ref(`chatRooms/${currentRoom}/users/${currentUser}/lastSeen`).set(Date.now());
-            }
-        }, 45000); // Every 45 seconds
+        // Add a leave button on mobile
+        let leaveBtn = document.createElement('button');
+        leaveBtn.textContent = "Leave";
+        leaveBtn.style="background:#fafafa;color:#075e54;border:1px solid #eee;padding:6px 14px;margin:9px 0 4px 0;border-radius:12px;font-weight:bold;font-size:1em;display:none;position:absolute;right:18px;top:13px;z-index:4;";
+        leaveBtn.onclick = leaveRoom;
+        document.body.appendChild(leaveBtn);
 
-        // Prevent zoom on iOS when focusing input
-        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-            const viewport = document.querySelector('meta[name="viewport"]');
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        function leaveRoom(){
+            if(currentRoom){
+                db.ref(`chatRooms/${currentRoom}/users/${myUID}`).remove();
+                if(messageListener) messageListener.off();
+                if(usersListener) usersListener.off();
+            }
+            chatDiv.style.display = "none";
+            actionArea.style.display = "block";
+            currentRoom = null;
+            renderedMsgs = 0;
+            usernameInput.value = myName;
+            setTimeout(()=>usernameInput.focus(),300);
         }
 
-        console.log('🔥 Connect Chat App Loaded Successfully!');
-        console.log('👤 Your User ID:', currentUser);
+        // Auto set input case for room code
+        roomCodeInput.addEventListener('input',function(){
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+        });
+
+        // Update lastSeen
+        setInterval(()=>{
+            if(currentRoom) {
+                db.ref(`chatRooms/${currentRoom}/users/${myUID}/lastSeen`).set(Date.now());
+            }
+        }, 35000);
+
+        // For mobile leave UX
+        function handleResize(){
+            // Show leaveBtn only on chat, small screens
+            if(window.innerWidth<=530 && currentRoom) leaveBtn.style.display="block";
+            else leaveBtn.style.display="none";
+        }
+        window.addEventListener("resize",handleResize);
+        setInterval(handleResize,1500);
+
+        // Autofocus name field on start on mobile
+        setTimeout(function(){
+            if(window.innerWidth<600) usernameInput.focus();
+        },350);
+
+        // Welcome message scroll animation
+        window.onload = () => {
+            document.body.classList.add('fade');
+        };
     </script>
 </body>
 </html>
