@@ -1,531 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect - Chat like WhatsApp</title>
-    <style>
-        :root {
-            --primary: #25d366;
-            --primary-dark: #075e54;
-            --secondary: #ece5dd;
-            --chat-bg: url('https://i.ibb.co/c8LxLyB/wa-bg.png');
-        }
-        body {
-            background: var(--secondary);
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .container {
-            max-width: 480px;
-            margin: auto;
-            background: #fff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-            border-radius: 0 0 12px 12px;
-            position: relative;
-        }
-        .header {
-            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-            color: #fff;
-            padding: 20px 20px 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-radius: 0 0 12px 12px;
-            position: sticky;
-            top: 0;
-            z-index: 3;
-        }
-        .header .brand {
-            font-size: 1.6rem;
-            font-weight: 900;
-            letter-spacing: 1.5px;
-            display: flex;
-            align-items: center;
-        }
-        .header .brand::before {
-            content: '';
-            display: inline-block;
-            background: url('https://i.ibb.co/JjV6kV9/whatsapp.png') no-repeat center center/cover;
-            width: 28px; height: 28px;
-            margin-right: 10px;
-            opacity: 0.85;
-        }
-        .header .room-details {
-            font-size: 1rem;
-            letter-spacing: 1px;
-            text-align: right;
-        }
-        .action-area {
-            padding: 28px 20px 12px 20px;
-        }
-        .welcome {
-            text-align: center;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            margin: 18px 0 10px 0;
-            gap: 12px;
-        }
-        .input-group label {
-            text-align: left;
-            color: #555;
-            font-size: 1.04em;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-        input[type='text'] {
-            border: 1.4px solid #dadada;
-            outline: none;
-            border-radius: 6px;
-            padding: 12px 13px;
-            font-size: 1.12em;
-            background: #fafafa;
-            transition: border .2s;
-        }
-        input[type='text']:focus {
-            border: 1.4px solid var(--primary-dark);
-        }
-        button {
-            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-            color: #fff;
-            border: none;
-            padding: 14px 25px;
-            border-radius: 7px;
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: 600;
-            box-shadow: 0 2px 8px #25d36632;
-            transition: box-shadow .18s, background .18s;
-        }
-        button:active {
-            background: linear-gradient(90deg, #43b981 60%, var(--primary-dark));
-        }
-        .alert {
-            color: #f44336;
-            font-size: 1em;
-            margin: 6px 0 0 0;
-        }
-        /* Chat BG & Structure */
-        #chat {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-        #chatArea {
-            flex: 1; 
-            background: var(--chat-bg), var(--secondary);
-            background-size: contain;
-            padding: 12px;
-            overflow-y: auto;
-            transition: background 0.3s;
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            animation: fadeIn .4s;
-        }
-        @keyframes fadeIn {
-            from { opacity:0; }
-            to { opacity:1; }
-        }
-
-        .msg-bubble {
-            max-width: 74%;
-            margin: 5px 0;
-            padding: 10px 14px 8px 14px;
-            background: #fff;
-            border-radius: 14px 14px 14px 4px;
-            position: relative;
-            font-size: 1.01em;
-            box-shadow: 0 1px 3px #5551;
-            word-wrap: break-word;
-            opacity: 0;
-            animation: popin 0.26s cubic-bezier(.26,.9,.65,1.45) forwards;
-        }
-        .msg-bubble.own {
-            background: linear-gradient(90deg, #dcf8c6, #7de290 55%);
-            color: #222;
-            border-radius: 14px 4px 16px 14px;
-            margin-left: auto;
-            margin-right: 2px;
-        }
-        .msg-meta {
-            color: #95a5a6;
-            font-size: 0.77em;
-            margin-top: 4px;
-            text-align: right;
-        }
-        @keyframes popin {
-            0% {transform: scale(0.96) translateY(10px); opacity:0}
-            65%{transform: scale(1.05) translateY(-3px);}
-            100%{transform: scale(1) translateY(0); opacity:1;}
-        }
-        /* Input & Footer */
-        .bottom-bar {
-            background: #fafafa;
-            padding: 10px;
-            border-top: 1.5px solid #eee;
-            display: flex;
-            gap: 8px;
-        }
-        .bottom-bar input[type='text'] {
-            flex: 1;
-            outline: none;
-            border: 1.5px solid #c7ebda;
-            border-radius: 20px;
-            font-size: 1.04em;
-            background: #fff;
-            padding: 11px 14px;
-            margin: 0;
-        }
-        .bottom-bar button {
-            padding: 0 20px;
-            font-size: 1.32em;
-            border-radius: 100px;
-            background: var(--primary);
-            background: linear-gradient(90deg, #25d366, #2ec372 50%);
-            box-shadow: none;
-            height: 44px;
-        }
-        .footer {
-            text-align: center;
-            padding: 10px 10px 15px 10px;
-            color: #444;
-            font-size: 1em;
-            background: none;
-        }
-        .footer a {
-            color: #25d366;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-weight: 700;
-        }
-        .footer img {
-            width: 21px; height: 21px; vertical-align: middle; margin-right: 3px; filter: drop-shadow(0 0 1px #19ea95c0);
-        }
-        .fade {
-            animation: fadeIn .5s;
-        }
-        /* Mobile */
-        @media (max-width: 540px) {
-            .container,
-            #chatArea {
-                max-width: 100vw;
-                border-radius: 0;
-            }
-            .header {padding: 15px 13px 8px 14px;}
-            .footer {font-size: 0.96em;}
-        }
-        @media (max-width: 370px) {
-            .header .brand {font-size: 1.1rem;}
-        }
-        /* Hide scrollbars on mobile */
-        #chatArea::-webkit-scrollbar {width:0 !important;}
-        #chatArea {scrollbar-width:none;}
-    </style>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <title> CONNECT </title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style>
+    :root {
+      --wa-green: #25d366;
+      --wa-dark: #075e54;
+      --wa-light: #e5ffef;
+      --msg-in: #dcf8c6;
+      --msg-out: #fff;
+      --msg-in-dark: #12975a;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--wa-light);
+      min-height: 100vh;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background: var(--wa-dark);
+      color: #fff;
+      padding: 18px 18px 10px 18px;
+      text-align: left;
+      font-weight: bold;
+      font-size: 1.4em;
+      letter-spacing: 1px;
+      border-radius: 0 0 15px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1em;
+    }
+    .disclaimer {
+      background: #eee;
+      color: #222;
+      text-align: center;
+      font-size: 0.97em;
+      letter-spacing: 0.01em;
+      padding: 5px 10px;
+    }
+    .container {
+      max-width: 438px;
+      margin: 18px auto 0 auto;
+      background: #fff;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 0.5px 8px #0001;
+      display: flex;
+      flex-direction: column;
+      height: 78vh;
+      min-height: 410px;
+      position: relative;
+      overflow: hidden;
+    }
+    #login {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3vh 18px 0 18px;
+      gap: 22px;
+      background: #fff;
+    }
+    #login label {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+    }
+    #login input[type="text"] {
+      width: 80vw;
+      max-width: 300px;
+      border: 1.4px solid #ddd;
+      border-radius: 6px;
+      padding: 12px 13px;
+      font-size: 1.13em;
+      background: #fafafa;
+      margin-bottom: 10px;
+      transition: border .2s;
+      outline: none;
+    }
+    #login input[type="text"]:focus { border: 1.4px solid var(--wa-green);}
+    #login button {
+      background: linear-gradient(90deg, var(--wa-dark), var(--wa-green) 80%);
+      color: #fff;
+      border: none;
+      padding: 13px 26px;
+      border-radius: 7px;
+      font-size: 1.11em;
+      letter-spacing:1px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 6px;
+      box-shadow: 0 2px 8px #25d36632;
+      transition: background .17s;
+    }
+    #login button:active { background: var(--wa-green);}
+    .alert {
+      color: #d32f2f;
+      font-size: 1em;
+      padding: 4px 2px;
+      text-align: center;
+    }
+    #mainChat {display:none;flex:1;flex-direction:column; height:100%;}
+    .room-bar {
+      background: var(--wa-green);
+      color: #fff;
+      font-size: 1.07em;
+      font-weight: 600;
+      letter-spacing:0.5px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .room-bar small {
+      color: #e8ffe8;
+      font-size: 0.97em;
+    }
+    .leave-btn {
+      background: #e7f4eb;
+      color: #0d8852;
+      border: none;
+      border-radius: 17px;
+      font-size: 0.96em;
+      padding: 4px 13px;
+      font-weight:bold;
+      margin-left: 2px;
+      cursor: pointer;
+      transition:.15s;
+    }
+    .leave-btn:active { background: #ceeac4;}
+    #msgs {
+      background: var(--wa-light);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 8px 8px 8px;
+      overflow-y: auto;
+      height: 100%;
+      gap: 7px;
+    }
+    .msg-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      max-width: 92%;
+      margin-bottom: 3px;
+      animation: popinmsg .19s cubic-bezier(.24,1.3,.52,1.14);
+    }
+    .msg-bubble {
+      padding: 10px 17px 7px 13px;
+      background: var(--msg-out);
+      border-radius: 0 11px 13px 8px;
+      box-shadow: 0 1.5px 7px #c5ecdd24;
+      color: #111;
+      font-size: 1.05em;
+      max-width: 100vw;
+      word-break: break-word;
+      position:relative;
+    }
+    .msg-row.me { align-items: flex-end !important;}
+    .msg-row.me .msg-bubble {background: var(--msg-in); color: #0b4528; border-radius: 11px 0 10px 13px;}
+    .msg-meta {
+      font-size: 0.86em;
+      color: #888;
+      margin-top: 2px;
+      text-align: right;
+      letter-spacing: 0.05em;
+    }
+    .msg-name {
+      font-weight: bold;
+      font-size: 0.97em;
+      margin-bottom: 2px;
+      color: #25d366;
+    }
+    .msg-row.me .msg-name { color: #075e54;}
+    @keyframes popinmsg {from{opacity:0;transform:translateY(20px) scale(0.96);}to{opacity:1;transform:none;}}
+    .bottom-bar {
+      background: #fafffe;
+      padding: 12px 7px 11px 6px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border-top: 1px solid #cbf5da81;
+      min-height: 50px;
+    }
+    .bottom-bar input[type="text"] {
+      flex: 1;
+      border-radius: 19px;
+      padding: 13px 15px;
+      font-size: 1.04em;
+      border: 1px solid #d6eae0;
+      outline: none;
+      background: #fff;
+      color: #232323;
+    }
+    .bottom-bar button.sendbtn {
+      padding: 0 18px;
+      font-size: 1.4em;
+      height: 42px;
+      border-radius: 50px;
+      background: var(--wa-green);
+      border: none;
+      color: #fff;
+      box-shadow: 0 2px 7px #25d36633;
+      font-weight:bold;
+      cursor: pointer;
+      transition: background .18s;
+    }
+    .bottom-bar button.sendbtn:active { background: var(--wa-dark);}
+    .footer {
+      text-align: center;
+      padding: 15px 8px 20px 8px;
+      color: #444;
+      font-size: 0.98em;
+      background: none;
+      margin-top: 2px;
+    }
+    .footer a {
+      color: var(--wa-green);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 700;
+    }
+    .footer img {
+      width: 18px; height: 18px; vertical-align: middle; margin-bottom: -2px; margin-right: 3px;
+      filter: drop-shadow(0 0 2px #2fe79998);
+    }
+    @media (max-width:520px){
+      .container {max-width:100vw;border-radius:0;margin:0;}
+      .header {border-radius:0;}
+      #login input[type="text"], .bottom-bar input[type="text"] {width:100vw;}
+      #login, #mainChat {padding:0;}
+    }
+    @media (max-width:375px){
+      .header {font-size:1.04em;}
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <span class="brand">CONNECT</span>
-            <span class="room-details" id="roomDetails"></span>
+  <div class="header">
+    <span class="brand">WhatsApp Lite • Connect</span>
+    <span style="font-size:0.98em;"></span>
+  </div>
+  <div class="disclaimer">🔒 Every chat is end-to-end encrypted</div>
+  <div class="container">
+    <!-- Login + Join/Create Room -->
+    <div id="login">
+      <form id="userForm" autocomplete="off" style="width:100%;">
+        <label for="name">Enter your name</label>
+        <input type="text" required maxlength="20" id="name" placeholder="Eg: Kowsik" autocomplete="nickname">
+        <label for="roomc" style="margin-top:8px;">Room Code (to join)</label>
+        <input type="text" id="roomc" maxlength="6" pattern="[A-Z0-9]*" placeholder="Eg: 35X1AZ" style="margin-bottom:8px;text-transform:uppercase">
+        <button type="submit" style="margin-top:11px;width:100%;">Join Room</button>
+        <div style="margin:12px 0 0 0;text-align:center;font-weight:600;">
+          <span style="color:#888;font-size:13px;">Or</span><br>
+          <button type="button" id="createBtn" style="background:var(--wa-dark);margin-top:9px;">Create New Room</button>
         </div>
-        <div class="action-area" id="actionArea">
-            <form id="userForm" autocomplete="off">
-                <div class="welcome fade">
-                    <h2 style="margin-bottom:0.4em;">👋 Welcome to <span style="color:#25d366;">Connect</span></h2>
-                    <p>Enter your name to chat securely like WhatsApp.<br>Create a new room or join using a code.</p>
-                </div>
-                <div class="input-group">
-                    <label for="username">Your Name</label>
-                    <input type="text" id="username" required maxlength="20" placeholder="Eg: Kowsik" autocomplete="nickname" style="text-transform:capitalize">
-                </div>
-                <div class="input-group" style="margin-top:14px;">
-                    <button type="button" id="createRoom" style="background:var(--primary);">👉 Create New Room</button>
-                </div>
-                <div class="input-group" style="margin-top:8px;">
-                    <label for="roomCodeInput">Room Code</label>
-                    <input type="text" id="roomCodeInput" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="Eg: XZ302A">
-                    <button type="button" id="joinRoom" style="margin-top:6px;width:100%;">🔑 Join Room</button>
-                </div>
-                <div class="alert" id="formError"></div>
-            </form>
-        </div>
-
-        <div id="chat" style="display:none;">
-            <div id="chatArea"></div>
-            <form class="bottom-bar" id="chatForm" autocomplete="off" spellcheck="true">
-                <input type="text" id="messageInput" maxlength="500" placeholder="Type a message..." autocomplete="off" required>
-                <button type="submit" tabindex="2" title="Send">▶</button>
-            </form>
-        </div>
-        <div class="footer">
-            Created by Kowsik &nbsp;|&nbsp;
-            <a href="https://instagram.com/iam_kowsik_" target="_blank" rel="noopener">
-                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram logo">
-                @iam_kowsik_
-            </a>
-        </div>
+        <div class="alert" id="formError"></div>
+      </form>
     </div>
-    <script>
-        // --- Firebase config ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyBVYirdGN7Vp858jQNkYdE8UdkQ1ZbCH6k",
-            authDomain: "connect-e450b.firebaseapp.com",
-            databaseURL: "https://connect-e450b-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "connect-e450b",
-            storageBucket: "connect-e450b.appspot.com",
-            messagingSenderId: "674438876738",
-            appId: "1:674438876738:web:ab26bbbedf99c9b64767db"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <!-- Main Chat -->
+    <div id="mainChat">
+      <div class="room-bar">
+        <span id="roomName"></span>
+        <button class="leave-btn" onclick="leaveRoom()">Leave</button>
+      </div>
+      <div id="msgs"></div>
+      <form class="bottom-bar" id="chatForm" autocomplete="off">
+        <input type="text" id="msgInput" maxlength="200" placeholder="Type a message..." autocomplete="off" required>
+        <button type="submit" tabindex="2" title="Send" class="sendbtn">▶</button>
+      </form>
+    </div>
+  </div>
+  <div class="footer">
+    Created by Kowsik &nbsp;|&nbsp;
+    <a href="https://instagram.com/iam_kowsik_" target="_blank" rel="noopener">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram logo">
+      @iam_kowsik_
+    </a>
+  </div>
+  <script>
+    // --- Firebase config ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBVYirdGN7Vp858jQNkYdE8UdkQ1ZbCH6k",
+      authDomain: "connect-e450b.firebaseapp.com",
+      databaseURL: "https://connect-e450b-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "connect-e450b",
+      storageBucket: "connect-e450b.appspot.com",
+      messagingSenderId: "674438876738",
+      appId: "1:674438876738:web:ab26bbbedf99c9b64767db"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        // --- App state ---
-        let myName = "";
-        let currentRoom = null;
-        let messageListener = null;
-        let usersListener = null;
-        let renderedMsgs = 0;
-        let myUID = "User_" + Math.random().toString(36).substr(2,6);
+    // --- State ---
+    let myName = "", currentRoom = "", myUID = "User_" + Math.random().toString(36).substr(2,6),
+        msgListener = null, userListener = null;
 
-        // DOM
-        const actionArea = document.getElementById('actionArea');
-        const userForm = document.getElementById('userForm');
-        const formError = document.getElementById('formError');
-        const createRoomBtn = document.getElementById('createRoom');
-        const joinRoomBtn   = document.getElementById('joinRoom');
-        const usernameInput = document.getElementById('username');
-        const roomCodeInput = document.getElementById('roomCodeInput');
-        const chatDiv = document.getElementById('chat');
-        const chatArea = document.getElementById('chatArea');
-        const messageInput = document.getElementById('messageInput');
-        const chatForm     = document.getElementById('chatForm');
-        const roomDetails  = document.getElementById('roomDetails');
+    // DOM refs
+    const loginDiv = document.getElementById("login");
+    const mainChat = document.getElementById("mainChat");
+    const userForm = document.getElementById("userForm");
+    const msgForm = document.getElementById("chatForm");
+    const formError = document.getElementById("formError");
+    const roomField = document.getElementById("roomName");
+    const msgsDiv = document.getElementById("msgs");
+    const msgInput = document.getElementById("msgInput");
+    const nameInput = document.getElementById("name");
+    const roomInput = document.getElementById("roomc");
+    const createBtn = document.getElementById("createBtn");
 
-        // Helper
-        function genRoomCode() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            let code = "";
-            for(let i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
-            return code;
-        }
+    // Utils
+    function escapeHtml(text) {
+      let div=document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    function genRoomCode() {
+      const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let s="";
+      for(let i=0;i<6;i++)s+=chars[Math.floor(Math.random()*chars.length)];
+      return s;
+    }
+    function scrollToBottom() {
+      setTimeout(()=>{msgsDiv.scrollTop=msgsDiv.scrollHeight},90);
+    }
 
-        // Validate name: Not blank, no only numbers/spaces, not too long
-        function validName(name) {
-            if(!name || name.trim().length < 2) return false;
-            if(/^\d+$/.test(name.trim())) return false;
-            return true;
-        }
+    // Room join/create
+    userForm.onsubmit = async (e) => {
+      e.preventDefault();
+      let name = nameInput.value.trim();
+      if(!name || name.length<2 || /^\d+$/.test(name)) {formError.textContent="Please enter a proper name.";return;}
+      myName = name;
+      let rc = roomInput.value.trim().toUpperCase();
+      if(!/^[A-Z0-9]{6}$/.test(rc)) {formError.textContent="Valid room code required to join.";return;}
+      // Check room exists
+      let roomRef = db.ref('chatRooms/'+rc);
+      let snap = await roomRef.once('value');
+      if(!snap.exists()) {formError.textContent="Room does not exist. Try creating a new room.";return;}
+      joinRoom(rc);
+    };
 
-        // Entry: Set name then show actions
-        usernameInput.addEventListener('input', ()=>{
-            formError.textContent="";
-        });
+    createBtn.onclick = async ()=>{
+      let name = nameInput.value.trim();
+      if(!name || name.length<2 || /^\d+$/.test(name)) {formError.textContent="Please enter a proper name.";return;}
+      myName = name;
+      let code = genRoomCode();
+      let roomref = db.ref('chatRooms/'+code);
+      let exists = (await roomref.once('value')).exists();
+      if(exists) {createBtn.onclick();return;}
+      roomref.set({createdAt:Date.now(),createdBy:myName});
+      joinRoom(code);
+    };
 
-        createRoomBtn.onclick = ()=>{
-            myName = usernameInput.value.trim();
-            if(!validName(myName)) { formError.textContent = "Please enter a proper name (min 2 letters, not just numbers)"; return; }
-            formError.textContent = "";
-            let code = genRoomCode();
-            // Make sure it's unique (very rare collision)
-            db.ref('chatRooms/'+code).once('value').then((snap)=>{
-                if(snap.exists()) { createRoomBtn.onclick(); return; }
-                // create room
-                db.ref('chatRooms/'+code).set({
-                    createdAt: Date.now(),
-                    createdBy: myName
-                });
-                joinRoomByCode(code);
-            });
-        };
+    function joinRoom(code) {
+      currentRoom = code;
+      // Add to room's user list (for info)
+      db.ref(`chatRooms/${code}/users/${myUID}`).set({
+        name: myName,
+        joinedAt: Date.now(),
+        lastSeen: Date.now()
+      });
+      loginDiv.style.display = "none";
+      mainChat.style.display = "flex";
+      roomField.textContent = "Room: " + code;
+      listenForMsgs();
+      scrollToBottom();
+    }
+    window.leaveRoom = function() {
+      if(currentRoom) {
+        db.ref(`chatRooms/${currentRoom}/users/${myUID}`).remove();
+        if(msgListener) msgListener.off();
+      }
+      mainChat.style.display = "none";
+      loginDiv.style.display = "flex";
+      msgsDiv.innerHTML = "";
+      roomInput.value = "";
+      nameInput.value = myName;
+      formError.textContent = "";
+      currentRoom = "";
+    }
 
-        joinRoomBtn.onclick = ()=>{
-            myName = usernameInput.value.trim();
-            if(!validName(myName)) { formError.textContent = "Please enter your name to join."; return; }
-            let code = roomCodeInput.value.trim().toUpperCase();
-            if(!/^[A-Z0-9]{6}$/.test(code)) {
-                formError.textContent = "Enter a valid 6 character room code.";
-                return;
-            }
-            formError.textContent = "";
-            db.ref('chatRooms/'+code).once('value').then((snap)=>{
-                if(!snap.exists()) {formError.textContent="No such room found."; return;}
-                joinRoomByCode(code);
-            });
-        };
+    function listenForMsgs() {
+      if(msgListener) msgListener.off();
+      msgsDiv.innerHTML = "";
+      let ref = db.ref(`chatRooms/${currentRoom}/messages`).limitToLast(80);
+      ref.on('child_added', snap => {
+        let m = snap.val();
+        renderMsg(m);
+      });
+      msgListener = ref;
+    }
+    function renderMsg(m) {
+      let row = document.createElement('div');
+      row.className = "msg-row" + (m.sender===myUID ? " me" : "");
+      let nameSegment = (m.name && m.sender!==myUID) ? `<div class="msg-name">${escapeHtml(m.name)}</div>` : "";
+      row.innerHTML =
+        `<div class="msg-bubble">${nameSegment}${escapeHtml(m.text)}
+        <div class="msg-meta">${new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div>`;
+      msgsDiv.appendChild(row);
+      scrollToBottom();
+    }
 
-        // Allow enter to submit name/join room in UX
-        userForm.addEventListener("keydown", e => {
-            if(e.key==="Enter" && document.activeElement!==usernameInput) {
-                e.preventDefault();
-            }
-        });
+    // Send msg
+    msgForm.onsubmit = function(e){
+      e.preventDefault();
+      let text = msgInput.value.trim();
+      if(!text || !currentRoom) return;
+      db.ref(`chatRooms/${currentRoom}/messages`).push({
+        text, name: myName, sender: myUID, timestamp: Date.now()
+      }).then(()=>{
+        msgInput.value = "";
+      });
+    };
+    // Update lastSeen
+    setInterval(()=>{if(currentRoom) db.ref(`chatRooms/${currentRoom}/users/${myUID}/lastSeen`).set(Date.now());}, 35000);
 
-        // Main join logic
-        function joinRoomByCode(code) {
-            currentRoom = code;
-            // Add user to /users
-            db.ref(`chatRooms/${code}/users/${myUID}`).set({
-                name: myName,
-                joinedAt: Date.now(),
-                lastSeen: Date.now()
-            });
-            switchToChatUI();
-            listenForMessages();
-            listenForUsers();
-            updateRoomDetails(code);
-        }
+    // Input - formatting
+    nameInput.oninput = ()=>{formError.textContent="";};
+    roomInput.oninput = ()=>{roomInput.value=roomInput.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);formError.textContent="";};
 
-        function updateRoomDetails(code) {
-            db.ref('chatRooms/' + code).once('value').then(snap => {
-                if(snap.exists()) {
-                    roomDetails.textContent = "Room: " + code;
-                } else {
-                    roomDetails.textContent = "";
-                }
-            });
-        }
+    // UX
+    setTimeout(()=>{nameInput.focus();},450);
+    window.onkeydown = e=>{if(e.key==="Escape"&&mainChat.style.display==="flex")leaveRoom();};
 
-        function switchToChatUI() {
-            actionArea.style.display = "none";
-            chatDiv.style.display = "flex";
-            chatArea.innerHTML = '<div class="welcome" style="font-size:1.13em;text-align:center;color:#669C7B;padding:55px 10px 24px 10px;"><b>Room Joined!</b><br>Welcome, ' + escapeHtml(myName) + '.<br><span style="font-size:0.9em;color:#888;">Say hello! 👋</span></div>';
-            renderedMsgs = 0;
-            messageInput.value = "";
-            setTimeout(()=> messageInput.focus(), 250);
-        }
-
-        function listenForMessages() {
-            if(messageListener) messageListener.off();
-            chatArea.innerHTML = "";
-            let msgref = db.ref(`chatRooms/${currentRoom}/messages`).orderByChild('timestamp').limitToLast(60);
-            msgref.on('child_added', snap => {
-                let msg = snap.val();
-                if(!msg) return;
-                renderMessage(msg);
-            });
-            messageListener = msgref;
-        }
-
-        function listenForUsers() {
-            if(usersListener) usersListener.off();
-            usersListener = db.ref(`chatRooms/${currentRoom}/users`);
-            usersListener.on('value', snap=>{
-                let val = snap.val();
-                let count = val ? Object.keys(val).length : 0;
-                roomDetails.textContent = "Room: "+currentRoom+(count?" | "+count+" online":"");
-            });
-        }
-
-        function escapeHtml(text) {
-            let div=document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Render message, WhatsApp-like animation
-        function renderMessage(msg) {
-            let bubble = document.createElement('div');
-            bubble.className = 'msg-bubble'+(msg.sender===myUID?' own':'');
-            bubble.style.animationDelay = (renderedMsgs<2 ? renderedMsgs*0.11 : 0) + "s";
-            bubble.innerHTML = 
-                `<div style="font-weight:500;">${escapeHtml(msg.name || "Unknown")}</div>
-                <div>${escapeHtml(msg.text)}</div>
-                <div class="msg-meta">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
-            chatArea.appendChild(bubble);
-            renderedMsgs++;
-            setTimeout(() => {
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }, 100);
-        }
-
-        // Send message
-        chatForm.onsubmit = function(e){
-            e.preventDefault();
-            let text = messageInput.value.trim();
-            if(!text) return;
-            chatForm.querySelector("button[type=submit]").disabled = true;
-            db.ref(`chatRooms/${currentRoom}/messages`).push({
-                text: text,
-                sender: myUID,
-                name: myName,
-                timestamp: Date.now()
-            }).then(()=>{
-                messageInput.value = "";
-                chatForm.querySelector("button[type=submit]").disabled = false;
-                setTimeout(()=>messageInput.focus(),100);
-            });
-        };
-
-        // Leave Room
-        document.getElementById("roomDetails").addEventListener("dblclick",leaveRoom);
-        // Optional: Double-tap to leave
-        window.addEventListener("keydown", function(e){
-            if(e.key=="Escape" && chatDiv.style.display!=="none") leaveRoom();
-        });
-
-        // Add a leave button on mobile
-        let leaveBtn = document.createElement('button');
-        leaveBtn.textContent = "Leave";
-        leaveBtn.style="background:#fafafa;color:#075e54;border:1px solid #eee;padding:6px 14px;margin:9px 0 4px 0;border-radius:12px;font-weight:bold;font-size:1em;display:none;position:absolute;right:18px;top:13px;z-index:4;";
-        leaveBtn.onclick = leaveRoom;
-        document.body.appendChild(leaveBtn);
-
-        function leaveRoom(){
-            if(currentRoom){
-                db.ref(`chatRooms/${currentRoom}/users/${myUID}`).remove();
-                if(messageListener) messageListener.off();
-                if(usersListener) usersListener.off();
-            }
-            chatDiv.style.display = "none";
-            actionArea.style.display = "block";
-            currentRoom = null;
-            renderedMsgs = 0;
-            usernameInput.value = myName;
-            setTimeout(()=>usernameInput.focus(),300);
-        }
-
-        // Auto set input case for room code
-        roomCodeInput.addEventListener('input',function(){
-            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
-        });
-
-        // Update lastSeen
-        setInterval(()=>{
-            if(currentRoom) {
-                db.ref(`chatRooms/${currentRoom}/users/${myUID}/lastSeen`).set(Date.now());
-            }
-        }, 35000);
-
-        // For mobile leave UX
-        function handleResize(){
-            // Show leaveBtn only on chat, small screens
-            if(window.innerWidth<=530 && currentRoom) leaveBtn.style.display="block";
-            else leaveBtn.style.display="none";
-        }
-        window.addEventListener("resize",handleResize);
-        setInterval(handleResize,1500);
-
-        // Autofocus name field on start on mobile
-        setTimeout(function(){
-            if(window.innerWidth<600) usernameInput.focus();
-        },350);
-
-        // Welcome message scroll animation
-        window.onload = () => {
-            document.body.classList.add('fade');
-        };
-    </script>
+    // For mobile - swipe left to leave (optional)
+    let tsX = null;
+    msgsDiv.addEventListener('touchstart',e=>{
+      if(e.touches.length==1) tsX = e.touches[0].clientX;
+    });
+    msgsDiv.addEventListener('touchend',e=>{
+      if(tsX!=null && e.changedTouches.length==1) {
+        let dx = e.changedTouches[0].clientX-tsX;
+        if(Math.abs(dx)>120 && dx>0) leaveRoom();
+        tsX = null;
+      }
+    });
+  </script>
 </body>
 </html>
